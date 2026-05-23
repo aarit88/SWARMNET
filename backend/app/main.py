@@ -49,7 +49,7 @@ async def on_startup():
     """
     print(f"🚀 {settings.app_name} v{settings.app_version} starting up...")
     print(f"📍 Environment: {settings.environment}")
-    print(f"📖 API Docs: http://localhost:8000/docs")
+    print("📖 API Docs: http://localhost:8000/docs")
 
 
 @app.on_event("shutdown")
