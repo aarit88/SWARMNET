@@ -1,115 +1,180 @@
-# SWARMNET
-
-## AI Swarm Coordination System for Emergency Response
-
-SWARMNET is a real-time AI-powered emergency coordination platform where multiple intelligent agents collaborate autonomously during disasters and critical incidents.
-
-The platform is designed to assist cities, emergency responders, hospitals, and public safety systems by coordinating emergency operations through autonomous AI swarms.
-
----
-
-# Vision
-
-Modern emergency systems are fragmented, reactive, and slow during large-scale crises.
-
-SWARMNET aims to become an intelligent coordination layer capable of:
-
-* detecting incidents in real time
-* allocating emergency resources
-* coordinating hospitals
-* rerouting traffic
-* generating public alerts
-* predicting risk escalation
-* assisting command centers through AI-driven orchestration
+<p align="center">
+  <h1 align="center">🌐 SWARMNET</h1>
+  <p align="center">
+    <strong>AI Multi-Agent Emergency Response Platform</strong>
+  </p>
+  <p align="center">
+    Real-time swarm coordination system for emergency and disaster response
+  </p>
+</p>
 
 ---
 
-# Core Concept
+## 🚀 Overview
 
-Instead of a single AI assistant, SWARMNET uses multiple specialized AI agents working together as a swarm.
+**SWARMNET** is a real-time AI swarm coordination system designed for emergency and disaster response. Multiple AI agents collaborate autonomously to:
 
-Example agents:
+- 🔍 **Detect Incidents** — Automatically identify and classify emergencies
+- 🚑 **Allocate Resources** — Intelligently dispatch emergency services
+- 🚗 **Reroute Traffic** — Dynamic traffic management around incident zones
+- 🏥 **Coordinate Hospitals** — Real-time hospital capacity management
+- 📢 **Generate Public Alerts** — Automated multi-channel alert broadcasting
 
-* Incident Detection Agent
-* Traffic Coordination Agent
-* Hospital Allocation Agent
-* Public Alert Agent
-* Prediction & Analytics Agent
-* Central Orchestrator Agent
-
-These agents communicate, collaborate, and make coordinated decisions in real time.
+All orchestrated through a **live command dashboard** with real-time visualization.
 
 ---
 
-# MVP Goals
+## 🏗 Architecture
 
-The initial MVP focuses on:
-
-* simulated emergency incidents
-* live command dashboard
-* real-time incident feed
-* AI agent coordination
-* emergency map visualization
-* resource allocation simulation
-* websocket-based live updates
-
----
-
-# Tech Stack
-
-## Frontend
-
-* Next.js
-* TypeScript
-* Tailwind CSS
-* Leaflet.js
-* OpenStreetMap
-
-## Backend
-
-* FastAPI
-* Python
-* WebSockets
-
-## Data Layer
-
-* PostgreSQL
-* Redis
-
-## AI & Agents
-
-* AutoGen
-* Open-source LLMs
-* Future Azure AI integration
+```
+┌─────────────────────────────────────────────────────────┐
+│                    SWARMNET PLATFORM                     │
+├─────────────┬─────────────┬─────────────┬───────────────┤
+│  Frontend   │   Backend   │   Agents    │  Data Layer   │
+│  (Next.js)  │  (FastAPI)  │  (Python)   │  (PG/Redis)   │
+├─────────────┼─────────────┼─────────────┼───────────────┤
+│ Dashboard   │ REST API    │ Incident    │ PostgreSQL    │
+│ Live Map    │ WebSocket   │ Traffic     │ Redis Cache   │
+│ Agent View  │ Services    │ Hospital    │ Event Stream  │
+│ Metrics     │ Models      │ Alert       │               │
+│             │             │ Orchestrator│               │
+└─────────────┴─────────────┴─────────────┴───────────────┘
+```
 
 ---
 
-# Project Structure
+## 📁 Project Structure
 
-frontend/ → User dashboard & visualization
-backend/ → APIs & realtime services
-agents/ → Autonomous AI swarm agents
-docs/ → Architecture & planning
-data/ → Simulation and emergency datasets
+```
+swarmnet/
+│
+├── frontend/          # Next.js 15 + TypeScript + Tailwind CSS
+├── backend/           # FastAPI Python backend
+├── agents/            # AI agent modules (placeholder)
+├── docs/              # Architecture & API documentation
+├── data/              # Sample data and seed scripts
+├── docker/            # Docker configuration files
+├── scripts/           # Utility and setup scripts
+├── .github/           # GitHub workflows and templates
+│
+├── README.md          # This file
+├── .gitignore         # Git ignore rules
+└── docker-compose.yml # Multi-service Docker orchestration
+```
 
 ---
 
-# Long-Term Vision
+## 🛠 Tech Stack
 
-SWARMNET is planned as a scalable global emergency intelligence platform that can evolve into:
-
-* smart-city integrations
-* disaster management systems
-* public safety infrastructure
-* citizen emergency applications
-* autonomous crisis response coordination
+| Layer          | Technology                      |
+| -------------- | ------------------------------- |
+| Frontend       | Next.js 15, TypeScript, Tailwind CSS |
+| Backend        | FastAPI (Python 3.11+)          |
+| Database       | PostgreSQL 16                   |
+| Cache/Realtime | Redis 7                         |
+| Maps           | Leaflet + OpenStreetMap         |
+| AI Agents      | Python (modular, extensible)    |
+| Containerization | Docker + Docker Compose       |
 
 ---
 
-# Status
+## ⚡ Quick Start
 
-Current Stage:
-Project foundation and architecture setup.
+### Prerequisites
 
-Upcoming:
-Backend core services and AI agent orchestration.
+- **Node.js** >= 18.x
+- **Python** >= 3.11
+- **Docker** & **Docker Compose**
+- **PostgreSQL** 16+ (or use Docker)
+- **Redis** 7+ (or use Docker)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-org/swarmnet.git
+cd swarmnet
+```
+
+### 2. Start with Docker (Recommended)
+
+```bash
+docker-compose up --build
+```
+
+This starts all services:
+- **Frontend** → http://localhost:3000
+- **Backend API** → http://localhost:8000
+- **API Docs** → http://localhost:8000/docs
+- **PostgreSQL** → localhost:5432
+- **Redis** → localhost:6379
+
+### 3. Manual Setup
+
+#### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+#### Backend
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+---
+
+## 🧪 Development
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend && pytest
+
+# Frontend tests
+cd frontend && npm test
+```
+
+### Environment Variables
+
+Copy the example environment files:
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+```
+
+---
+
+## 📖 Documentation
+
+- [Architecture Overview](docs/architecture.md)
+- [API Specification](docs/api-spec.md)
+- [Development Roadmap](docs/roadmap.md)
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <strong>Built with 🧠 AI-first architecture for next-generation emergency response</strong>
+</p>

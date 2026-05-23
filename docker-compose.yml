@@ -1,0 +1,121 @@
+# ============================================
+# SWARMNET - Docker Compose Configuration
+# AI Multi-Agent Emergency Response Platform
+# ============================================
+# Usage:
+#   docker-compose up --build        # Start all services
+#   docker-compose up -d             # Start in detached mode
+#   docker-compose down              # Stop all services
+#   docker-compose logs -f backend   # Follow backend logs
+# ============================================
+
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────
+  # Frontend — Next.js 15 Dashboard
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    container_name: swarmnet-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_WS_URL=ws://backend:8000/ws
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - swarmnet-network
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # Backend — FastAPI Python Server
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend.Dockerfile
+    container_name: swarmnet-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://swarmnet:swarmnet_secret@postgres:5432/swarmnet_db
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=development
+      - DEBUG=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - swarmnet-network
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # PostgreSQL — Primary Database
+  # ─────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: swarmnet-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: swarmnet
+      POSTGRES_PASSWORD: swarmnet_secret
+      POSTGRES_DB: swarmnet_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swarmnet -d swarmnet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - swarmnet-network
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # Redis — Cache & Realtime Pub/Sub
+  # ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: swarmnet-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - swarmnet-network
+    restart: unless-stopped
+
+# ─────────────────────────────────────────
+# Volumes — Persistent Data Storage
+# ─────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ─────────────────────────────────────────
+# Networks — Service Communication
+# ─────────────────────────────────────────
+networks:
+  swarmnet-network:
+    driver: bridge
+    name: swarmnet-network
