@@ -7,6 +7,7 @@
 "use client";
 
 import { Settings, Radio, User, Shield } from "lucide-react";
+import { Badge } from "../ui/Badge";
 
 interface NavbarProps {
   currentView: string;
@@ -62,18 +63,10 @@ export default function Navbar({ currentView, setCurrentView }: NavbarProps) {
               SWARMNET
             </span>
           </div>
-          <div
-            className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono"
-            style={{
-              color: "var(--geo-primary)",
-              background: "rgba(34,211,238,0.06)",
-              border: "1px solid rgba(34,211,238,0.18)",
-              letterSpacing: "0.1em",
-            }}
-          >
+          <Badge variant="geo" className="hidden sm:flex items-center gap-1">
             <Shield size={8} />
             CLASSIFIED
-          </div>
+          </Badge>
         </button>
 
         {/* ── Nav tabs ── */}

@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, ShieldAlert, BarChart2, Zap, Server, Activity, ArrowUpRight } from "lucide-react";
 import LiveGraph from "./LiveGraph";
+import { Panel } from "../ui/Panel";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -48,8 +49,8 @@ export default function DashboardAnalyticsView() {
       </div>
 
       {/* ── Middle: AI Forecast & Crisis Progression ── */}
-      <div className="col-span-12 lg:col-span-8">
-        <div className="sn-panel p-5 flex flex-col justify-between" style={{ minHeight: 280 }}>
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel className="p-5 flex flex-col justify-between flex-1">
           <div>
             <div className="flex justify-between items-center mb-4 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
               <div className="flex items-center gap-2">
@@ -90,12 +91,12 @@ export default function DashboardAnalyticsView() {
             <span className="sn-label">MUTATED VECTOR ANALYSIS</span>
             <span className="text-[10px] font-mono text-[var(--intel-primary)]">CRIT_THRESHOLD: 88.2%</span>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* Crisis Progression details */}
-      <div className="col-span-12 lg:col-span-4">
-        <div className="sn-panel p-5 h-full flex flex-col justify-between" style={{ minHeight: 280 }}>
+      <div className="col-span-12 lg:col-span-4 flex flex-col">
+        <Panel className="p-5 h-full flex flex-col justify-between flex-1">
           <div>
             <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
               <div className="flex items-center gap-2">
@@ -140,12 +141,12 @@ export default function DashboardAnalyticsView() {
               Deviation parameter within delta-limit (0.04% bias). Swarm optimization functioning optimally.
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* ── Bottom row: Heatmap & Resource matrix ── */}
-      <div className="col-span-12 lg:col-span-8">
-        <div className="sn-panel p-5">
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel className="p-5 flex-1">
           <div className="flex justify-between items-center mb-4 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <div className="flex items-center gap-2">
               <BarChart2 size={13} style={{ color: "var(--geo-primary)" }} />
@@ -181,11 +182,11 @@ export default function DashboardAnalyticsView() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
       </div>
 
-      <div className="col-span-12 lg:col-span-4">
-        <div className="sn-panel p-5 h-full flex flex-col justify-between">
+      <div className="col-span-12 lg:col-span-4 flex flex-col">
+        <Panel className="p-5 h-full flex flex-col justify-between flex-1">
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="sn-label-accent">Operational Diagnostics</span>
@@ -199,7 +200,7 @@ export default function DashboardAnalyticsView() {
             <span className="sn-label">DIAG STATS</span>
             <span className="text-[9px] font-mono text-emerald-400 font-bold">100% HEALTH</span>
           </div>
-        </div>
+        </Panel>
       </div>
 
     </motion.div>

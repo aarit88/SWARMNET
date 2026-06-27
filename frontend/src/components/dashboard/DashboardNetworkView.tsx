@@ -15,6 +15,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Server, AlertCircle, CheckCircle, Wifi, Activity, Check } from "lucide-react";
+import { Panel } from "../ui/Panel";
+import { Badge } from "../ui/Badge";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -190,10 +192,10 @@ export default function DashboardNetworkView() {
     >
 
       {/* ── Main: Canvas Topology ── */}
-      <div className="col-span-12 lg:col-span-8">
-        <div
-          className="sn-panel sn-panel-geo relative overflow-hidden sn-bracket"
-          style={{ height: 420 }}
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel
+          variant="geo"
+          className="sn-bracket relative overflow-hidden flex-1 min-h-[420px] flex flex-col"
         >
           <div
             className="absolute top-0 inset-x-0 z-10 flex items-center justify-between px-5 py-3"
@@ -223,7 +225,7 @@ export default function DashboardNetworkView() {
             </div>
           </div>
           <NetworkTopologyCanvas />
-        </div>
+        </Panel>
 
         {/* Node health matrix (expanded with dynamic Phase Sync blink indicators) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
@@ -231,7 +233,7 @@ export default function DashboardNetworkView() {
             const isDegraded = n.status === "DEGRADED";
             const isCritical = n.status === "CRITICAL";
             return (
-              <div key={n.label} className="sn-panel p-4 flex flex-col justify-between">
+              <Panel key={n.label} className="p-4 flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-[10px] font-mono font-semibold" style={{ color: "var(--text-primary)" }}>{n.label}</span>
@@ -264,7 +266,7 @@ export default function DashboardNetworkView() {
                     {isCritical ? "MISALIGNED" : isDegraded ? "ALIGNING" : "LOCKED"}
                   </span>
                 </div>
-              </div>
+              </Panel>
             );
           })}
         </div>
@@ -274,7 +276,7 @@ export default function DashboardNetworkView() {
       <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
 
         {/* Health summary (expanded with real-time SVG Latency Jitter graph) */}
-        <div className="sn-panel p-5 flex flex-col justify-between" style={{ minHeight: 250 }}>
+        <Panel className="p-5 flex flex-col justify-between flex-1">
           <div>
             <div className="flex items-center gap-2 mb-3.5 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
               <Activity size={12} style={{ color: "var(--intel-primary)" }} />
@@ -306,10 +308,10 @@ export default function DashboardNetworkView() {
               />
             </svg>
           </div>
-        </div>
+        </Panel>
 
         {/* Alert log */}
-        <div className="sn-panel p-5 flex-1">
+        <Panel className="p-5 flex-1 flex flex-col">
           <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <AlertCircle size={12} style={{ color: "var(--color-warning)" }} />
             <span className="sn-label-accent">Alert Log</span>
@@ -347,7 +349,7 @@ export default function DashboardNetworkView() {
               <Server size={9} /> RUN SCAN
             </button>
           </div>
-        </div>
+        </Panel>
 
       </div>
 

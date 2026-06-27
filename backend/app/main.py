@@ -12,7 +12,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routes import health, websocket_routes
+from app.core.redis import redis_dependency
+from app.routes import health, websocket_routes, auth, incidents, agents
+from app.services.telemetry_simulator import telemetry_loop
+import asyncio
 
 # ─── Load Settings ───
 settings = get_settings()
@@ -41,15 +44,19 @@ app.add_middleware(
 # ─── Startup & Shutdown Events ───
 @app.on_event("startup")
 async def on_startup():
-    """
-    Initialize connections and services on application startup.
-    TODO: Add database connection pool initialization
-    TODO: Add Redis connection initialization
-    TODO: Start agent orchestrator
-    """
+
     print(f"🚀 {settings.app_name} v{settings.app_version} starting up...")
     print(f"📍 Environment: {settings.environment}")
     print("📖 API Docs: http://localhost:8000/docs")
+
+    try:
+        await redis_dependency.init_redis()
+        print("✅ Redis Connected")
+    except Exception as e:
+        print("⚠ Redis Not Available:", e)
+
+    asyncio.create_task(telemetry_loop())
+    print("✅ Telemetry Simulator Started")
 
 
 @app.on_event("shutdown")
@@ -57,7 +64,7 @@ async def on_shutdown():
     """
     Clean up connections and services on application shutdown.
     TODO: Close database connection pool
-    TODO: Close Redis connections
+    await redis_dependency.close()
     TODO: Gracefully stop agents
     """
     print(f"🛑 {settings.app_name} shutting down...")
@@ -66,6 +73,11 @@ async def on_shutdown():
 # ─── Register Routers ───
 # Health check endpoints
 app.include_router(health.router, tags=["Health"])
+
+# REST API routes
+app.include_router(auth.router)
+app.include_router(incidents.router)
+app.include_router(agents.router)
 
 # WebSocket endpoints for real-time communication
 app.include_router(websocket_routes.router, tags=["WebSocket"])

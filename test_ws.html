@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SwarmNet WebSocket Test</title>
+</head>
+
+<body>
+
+    <h1>SwarmNet Telemetry Test</h1>
+
+    <pre id="output"></pre>
+
+    <script>
+
+        const socket =
+            new WebSocket("ws://127.0.0.1:8000/ws/dashboard");
+
+        socket.onopen = () => {
+            console.log("Connected");
+        };
+
+        socket.onmessage = (event) => {
+            document.getElementById("output").innerText =
+                event.data;
+        };
+
+        socket.onerror = (error) => {
+            console.error(error);
+        };
+
+    </script>
+
+</body>
+
+</html>

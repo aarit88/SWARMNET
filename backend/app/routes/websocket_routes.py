@@ -16,44 +16,7 @@ import json
 router = APIRouter()
 
 
-class ConnectionManager:
-    """
-    Manages active WebSocket connections.
-    Supports broadcasting messages to all connected clients
-    and targeted messaging to specific clients.
-
-    TODO: Scale with Redis Pub/Sub for multi-instance deployments
-    """
-
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        """Accept and register a new WebSocket connection."""
-        await websocket.accept()
-        self.active_connections.append(websocket)
-        print(f"📡 Client connected. Total connections: {len(self.active_connections)}")
-
-    def disconnect(self, websocket: WebSocket):
-        """Remove a disconnected WebSocket client."""
-        self.active_connections.remove(websocket)
-        print(f"📡 Client disconnected. Total connections: {len(self.active_connections)}")
-
-    async def broadcast(self, message: dict):
-        """Send a message to all connected clients."""
-        for connection in self.active_connections:
-            try:
-                await connection.send_json(message)
-            except Exception:
-                pass  # Handle stale connections gracefully
-
-    async def send_personal(self, websocket: WebSocket, message: dict):
-        """Send a message to a specific client."""
-        await websocket.send_json(message)
-
-
-# Singleton connection manager
-manager = ConnectionManager()
+from app.websocket.manager import manager
 
 
 @router.websocket("/ws/dashboard")

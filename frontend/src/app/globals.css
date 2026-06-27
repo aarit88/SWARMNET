@@ -38,9 +38,9 @@
   --color-info:      #60a5fa;        /* blue-400 */
 
   /* Typography */
-  --text-primary:    #e2eaf5;
-  --text-secondary:  #7d8fa8;
-  --text-muted:      #3d4d62;
+  --text-primary:    #f8fafc;
+  --text-secondary:  #94a3b8;
+  --text-muted:      #64748b;
   --text-accent:     var(--intel-primary);
 
   /* ── Borders ── */
@@ -410,6 +410,17 @@ body {
 .sn-btn-critical:hover {
   background: rgba(248,113,113,0.16);
   box-shadow: 0 0 16px rgba(248,113,113,0.15);
+}
+
+/* Accessibility Focus States */
+button:focus-visible,
+a:focus-visible,
+.sn-btn-primary:focus-visible,
+.sn-btn-secondary:focus-visible,
+.sn-btn-ghost:focus-visible,
+.sn-btn-critical:focus-visible {
+  outline: 2px solid var(--intel-primary);
+  outline-offset: 2px;
 }
 
 /* ════════════════════════════════════════════════

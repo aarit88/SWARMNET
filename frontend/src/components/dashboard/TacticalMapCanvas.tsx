@@ -26,6 +26,19 @@ interface Incident {
   label: string;
 }
 
+const INCIDENTS: Incident[] = [
+  { id: "INC-A", x: 0.28, y: 0.38, severity: "critical", label: "STRUCTURAL FIRE" },
+  { id: "INC-B", x: 0.62, y: 0.55, severity: "high",     label: "POWER FAILURE"   },
+  { id: "INC-C", x: 0.44, y: 0.70, severity: "medium",   label: "FLOOD ZONE"      },
+  { id: "INC-D", x: 0.75, y: 0.28, severity: "high",     label: "HAZMAT SPILL"    },
+];
+
+const SEV_COLOR: Record<string, string> = {
+  critical: "#f87171",
+  high:     "#fb923c",
+  medium:   "#fbbf24",
+};
+
 interface SwarmAgent {
   x: number;
   y: number;
@@ -41,10 +54,17 @@ interface Props {
   className?: string;
   style?: React.CSSProperties;
   incidentFilter?: string | null;
+  liveAgents?: any[];
 }
 
-export default function TacticalMapCanvas({ className = "", style, incidentFilter }: Props) {
+export default function TacticalMapCanvas({ className = "", style, incidentFilter, liveAgents = [] }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const liveAgentsRef = useRef(liveAgents);
+  
+  // Sync the prop to the ref to avoid re-binding the canvas animation loop
+  useEffect(() => {
+    liveAgentsRef.current = liveAgents;
+  }, [liveAgents]);
   const rafRef    = useRef<number>(0);
   const frameRef  = useRef(0);
 
@@ -53,6 +73,10 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
   const [thermalActive, setThermalActive] = useState(false);
   const [corridorActive, setCorridorActive] = useState(true);
   const [weatherActive, setWeatherActive] = useState(false);
+
+  // Tooltip State
+  const [hoveredIncident, setHoveredIncident] = useState<Incident | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Ref mirror to access inside requestAnimationFrame without re-binding useEffect
   const stateRef = useRef({ gridActive, thermalActive, corridorActive, weatherActive });
@@ -69,22 +93,8 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
     let W = canvas.width  = canvas.offsetWidth;
     let H = canvas.height = canvas.offsetHeight;
 
-    // ── Incident data (relative 0–1 coords)
-    const INCIDENTS: Incident[] = [
-      { id: "INC-A", x: 0.28, y: 0.38, severity: "critical", label: "STRUCTURAL FIRE" },
-      { id: "INC-B", x: 0.62, y: 0.55, severity: "high",     label: "POWER FAILURE"   },
-      { id: "INC-C", x: 0.44, y: 0.70, severity: "medium",   label: "FLOOD ZONE"      },
-      { id: "INC-D", x: 0.75, y: 0.28, severity: "high",     label: "HAZMAT SPILL"    },
-    ];
-
-    const SEV_COLOR: Record<string, string> = {
-      critical: "#f87171",
-      high:     "#fb923c",
-      medium:   "#fbbf24",
-    };
-
-    // ── Swarm agents
-    const AGENTS: SwarmAgent[] = Array.from({ length: 14 }, (_, i) => {
+    // ── Swarm agents (Syncs with backend or dummy generated)
+    let AGENTS: SwarmAgent[] = Array.from({ length: 100 }, (_, i) => {
       const target = INCIDENTS[i % INCIDENTS.length];
       return {
         x:        Math.random(),
@@ -110,9 +120,14 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
       [0.78, 0.80, 0.16, 0.14],
     ];
 
+    let vigGrad: CanvasGradient | null = null;
+    let sweepGrad: CanvasGradient | null = null;
+
     const onResize = () => {
       W = canvas.width  = canvas.offsetWidth;
       H = canvas.height = canvas.offsetHeight;
+      vigGrad = null;
+      sweepGrad = null;
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(canvas);
@@ -129,10 +144,12 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
       ctx.fillRect(0, 0, W, H);
 
       // 2. Vignette
-      const vig = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*0.8);
-      vig.addColorStop(0, "transparent");
-      vig.addColorStop(1, tAct ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.55)");
-      ctx.fillStyle = vig;
+      if (!vigGrad) {
+        vigGrad = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*0.8);
+        vigGrad.addColorStop(0, "transparent");
+        vigGrad.addColorStop(1, tAct ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.55)");
+      }
+      ctx.fillStyle = vigGrad;
       ctx.fillRect(0, 0, W, H);
 
       // 3. City blocks — subtle district fills
@@ -169,10 +186,12 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
       ctx.save();
       ctx.translate(W * 0.5, H * 0.5);
       ctx.rotate(radarAngle);
-      const sweepGrad = ctx.createLinearGradient(0, 0, radarR, 0);
-      sweepGrad.addColorStop(0, "transparent");
-      sweepGrad.addColorStop(0.6, tAct ? "rgba(239,68,68,0.03)" : "rgba(34,211,238,0.04)");
-      sweepGrad.addColorStop(1, "transparent");
+      if (!sweepGrad) {
+        sweepGrad = ctx.createLinearGradient(0, 0, radarR, 0);
+        sweepGrad.addColorStop(0, "transparent");
+        sweepGrad.addColorStop(0.6, tAct ? "rgba(239,68,68,0.03)" : "rgba(34,211,238,0.04)");
+        sweepGrad.addColorStop(1, "transparent");
+      }
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, radarR, -0.25, 0);
@@ -277,13 +296,24 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
       });
 
       // 10. Move and draw agents
-      AGENTS.forEach(ag => {
-        const inc = INCIDENTS[ag.assignedTo];
-        ag.targetX = inc.x + Math.sin(f * 0.008 + ag.phase) * 0.06;
-        ag.targetY = inc.y + Math.cos(f * 0.008 + ag.phase) * 0.06;
+      const backendAgents = liveAgentsRef.current;
+      
+      AGENTS.forEach((ag, i) => {
+        if (backendAgents && backendAgents[i]) {
+          // Sync with backend websocket live data
+          ag.targetX = backendAgents[i].x;
+          ag.targetY = backendAgents[i].y;
+          // Faster speed since backend handles the logic, we just render the interpolation
+          ag.speed = 0.05; 
+        } else {
+          // Fallback dummy simulation if disconnected
+          const inc = INCIDENTS[ag.assignedTo];
+          ag.targetX = inc.x + Math.sin(f * 0.008 + ag.phase) * 0.06;
+          ag.targetY = inc.y + Math.cos(f * 0.008 + ag.phase) * 0.06;
+        }
 
-        ag.x += (ag.targetX - ag.x) * ag.speed * 60;
-        ag.y += (ag.targetY - ag.y) * ag.speed * 60;
+        ag.x += (ag.targetX - ag.x) * ag.speed * (backendAgents?.length ? 2 : 60);
+        ag.y += (ag.targetY - ag.y) * ag.speed * (backendAgents?.length ? 2 : 60);
 
         ag.trail.push({ x: ag.x * W, y: ag.y * H });
         if (ag.trail.length > 18) ag.trail.shift();
@@ -398,11 +428,11 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
 
       // Bottom scan line
       const scanY = ((f * 1.2) % H);
-      const scanGrad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
-      scanGrad.addColorStop(0, "transparent");
-      scanGrad.addColorStop(0.5, tAct ? "rgba(220,38,38,0.18)" : "rgba(34,211,238,0.18)");
-      scanGrad.addColorStop(1, "transparent");
-      ctx.fillStyle = scanGrad;
+      const scanG = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
+      scanG.addColorStop(0, "transparent");
+      scanG.addColorStop(0.5, tAct ? "rgba(220,38,38,0.18)" : "rgba(34,211,238,0.18)");
+      scanG.addColorStop(1, "transparent");
+      ctx.fillStyle = scanG;
       ctx.fillRect(0, scanY - 2, W, 4);
 
       // Active node count
@@ -422,12 +452,37 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
     };
   }, []);
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const W = rect.width;
+    const H = rect.height;
+
+    let found: Incident | null = null;
+    for (const inc of INCIDENTS) {
+      const ix = inc.x * W;
+      const iy = inc.y * H;
+      if (Math.hypot(x - ix, y - iy) < 20) {
+        found = inc;
+        break;
+      }
+    }
+    setHoveredIncident(found);
+    setMousePos({ x, y });
+  };
+
+  const handleMouseLeave = () => setHoveredIncident(null);
+
   return (
-    <div className="relative w-full h-full" style={style}>
-      <canvas
-        ref={canvasRef}
-        className={`w-full h-full ${className}`}
-      />
+    <div
+      className={`relative w-full h-full ${className}`}
+      style={style}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <canvas ref={canvasRef} className="w-full h-full block" />
 
       {/* Floating HUD Toggle Strip */}
       <div
@@ -462,6 +517,32 @@ export default function TacticalMapCanvas({ className = "", style, incidentFilte
           </button>
         ))}
       </div>
+
+      {/* HTML Tooltip for Incidents */}
+      {hoveredIncident && (
+        <div
+          className="absolute z-30 pointer-events-none p-3 rounded"
+          style={{
+            left: mousePos.x + 15,
+            top: mousePos.y + 15,
+            background: "rgba(3,6,16,0.9)",
+            backdropFilter: "blur(8px)",
+            border: `1px solid ${SEV_COLOR[hoveredIncident.severity]}40`,
+            boxShadow: `0 0 15px ${SEV_COLOR[hoveredIncident.severity]}15`,
+            transform: "translate(0, 0)",
+          }}
+        >
+          <div className="text-[10px] font-mono font-bold mb-1" style={{ color: "white" }}>
+            {hoveredIncident.id}
+          </div>
+          <div className="text-[9px] font-mono" style={{ color: SEV_COLOR[hoveredIncident.severity] }}>
+            {hoveredIncident.label}
+          </div>
+          <div className="text-[8px] font-mono text-[var(--text-muted)] mt-1.5">
+            SEVERITY: {hoveredIncident.severity.toUpperCase()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

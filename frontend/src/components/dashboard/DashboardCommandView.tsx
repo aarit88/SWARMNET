@@ -16,8 +16,25 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Shield, Activity, Globe, Download, Zap, Radio, Server, Check } from "lucide-react";
 import TacticalMapCanvas from "./TacticalMapCanvas";
+import { Panel } from "../ui/Panel";
+import { Badge } from "../ui/Badge";
+import { StatCard } from "../ui/StatCard";
+
+import { useTelemetryWebSocket } from "@/hooks/useTelemetryWebSocket";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+// Normalize lat/lng to 0-1 based on a bounding box around SF
+function normalizeCoordinates(lat: number, lng: number) {
+  const minLat = 37.7249;
+  const maxLat = 37.8249;
+  const minLng = -122.4694;
+  const maxLng = -122.3694;
+  return {
+    y: 1 - ((lat - minLat) / (maxLat - minLat)), // flip Y for screen coords
+    x: (lng - minLng) / (maxLng - minLng),
+  };
+}
 
 // ── Canvas-based real-time Comm Spectrum ──
 function CommSpectrumCanvas() {
@@ -97,8 +114,26 @@ const REASONING_STEPS = [
 ];
 
 export default function DashboardCommandView() {
+  const [activeTab, setActiveTab] = useState<"map" | "terminal" | "drone">("map");
+  const { isConnected, agents } = useTelemetryWebSocket("ws://localhost:8000/ws/dashboard");
   const [timeScale, setTimeScale] = useState("72H");
   const [reasoningLogs, setReasoningLogs] = useState<string[]>(REASONING_STEPS.slice(0, 3));
+
+  // Normalize websocket agents for the canvas
+  const normalizedAgents = agents.map((agent, i) => {
+    const coords = normalizeCoordinates(agent.lat, agent.lng);
+    return {
+      x: coords.x,
+      y: coords.y,
+      assignedTo: i % 4, // dummy assignment to incidents
+      speed: 0, // Not needed, backend handles position
+      targetX: coords.x,
+      targetY: coords.y,
+      trail: [],
+      phase: 0,
+      id: agent.id
+    };
+  });
 
   // Dynamic log streamer
   useEffect(() => {
@@ -124,10 +159,10 @@ export default function DashboardCommandView() {
       {/* ════════════════════════════════════════
           HERO MAP — full-width top row
           ════════════════════════════════════════ */}
-      <div className="col-span-12 lg:col-span-8">
-        <div
-          className="sn-panel sn-panel-geo sn-bracket relative overflow-hidden"
-          style={{ height: 460 }}
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel
+          variant="geo"
+          className="sn-bracket relative overflow-hidden min-h-[460px] flex-1"
         >
           {/* Satellite view bounds line HUD styling overlay */}
           <div className="absolute inset-4 pointer-events-none border border-white/[0.02] z-10">
@@ -172,7 +207,7 @@ export default function DashboardCommandView() {
           </div>
 
           {/* The map canvas */}
-          <TacticalMapCanvas style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+          <TacticalMapCanvas liveAgents={normalizedAgents} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
 
           {/* Incident legend overlay */}
           <div
@@ -210,10 +245,10 @@ export default function DashboardCommandView() {
           >
             <span className="sn-dot sn-dot-intel" />
             <span className="text-[10px] font-mono font-semibold" style={{ color: "var(--intel-primary)" }}>
-              14 AGENTS ACTIVE
+              {agents.length > 0 ? agents.length : 14} AGENTS ACTIVE
             </span>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* ════════════════════════════════════════
@@ -229,26 +264,12 @@ export default function DashboardCommandView() {
             { label: "STABILITY", val: "74", unit: "INDEX",    color: "var(--intel-primary)",  barW: 74,  barCls: "sn-bar-fill",          icon: <Globe  size={13} /> },
             { label: "READINESS", val: "99.8", unit: "%",      color: "var(--color-success)",  barW: 99.8,barCls: "sn-bar-fill-success",  icon: <Activity size={13} /> },
           ].map(m => (
-            <div key={m.label} className="sn-panel p-4 sn-panel-intel">
-              <div className="flex items-center justify-between mb-2">
-                <span className="sn-label">{m.label}</span>
-                <span style={{ color: "var(--text-muted)" }}>{m.icon}</span>
-              </div>
-              <div className="flex items-baseline gap-1 mb-3">
-                <span className="text-2xl font-mono font-bold" style={{ color: m.color, letterSpacing: "-0.02em" }}>
-                  {m.val}
-                </span>
-                <span className="text-[9px] font-mono" style={{ color: "var(--text-muted)" }}>{m.unit}</span>
-              </div>
-              <div className="sn-bar-track">
-                <div className={m.barCls} style={{ width: `${m.barW}%` }} />
-              </div>
-            </div>
+            <StatCard key={m.label} label={m.label} value={m.val} unit={m.unit} color={m.color} barWidth={m.barW} barClass={m.barCls} icon={m.icon} />
           ))}
         </div>
 
         {/* Decision & AI Reasoning Dual Panel */}
-        <div className="sn-panel p-5 flex-1 flex flex-col justify-between">
+        <Panel className="p-5 flex-1 flex flex-col justify-between">
           <div>
             <div
               className="flex items-center justify-between mb-4 pb-3"
@@ -286,7 +307,7 @@ export default function DashboardCommandView() {
                   <div className="sn-label mb-0.5">{ev.time} UTC</div>
                   <div className="text-[11px] font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>{ev.title}</div>
                   <p className="text-[10px] leading-relaxed mb-1.5" style={{ color: "var(--text-secondary)" }}>{ev.desc}</p>
-                  <span className={`sn-badge ${ev.badge}`} style={{ fontSize: 8 }}>{ev.badgeLabel}</span>
+                  <Badge variant={ev.badge === "sn-badge-success" ? "success" : "critical"} style={{ fontSize: 8 }}>{ev.badgeLabel}</Badge>
                 </div>
               ))}
             </div>
@@ -312,14 +333,14 @@ export default function DashboardCommandView() {
               ))}
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* ════════════════════════════════════════
           Bottom: Threat Chart + Comm Spectrum Dual Panel
           ════════════════════════════════════════ */}
-      <div className="col-span-12 lg:col-span-8">
-        <div className="sn-panel p-5">
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel className="p-5 flex-1 flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp size={13} style={{ color: "var(--intel-primary)" }} />
@@ -407,12 +428,12 @@ export default function DashboardCommandView() {
               <div className="absolute bottom-2 right-3 text-[8px] font-mono text-white/30">AES-X_BAND_ACTIVE</div>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* Bottom-right: AI Status */}
-      <div className="col-span-12 lg:col-span-4">
-        <div className="sn-panel p-5 h-full flex flex-col justify-between">
+      <div className="col-span-12 lg:col-span-4 flex flex-col">
+        <Panel className="p-5 h-full flex flex-col justify-between flex-1">
           <div>
             <span className="sn-label-accent block mb-4">AI Engine Status</span>
             <div className="space-y-3">
@@ -443,14 +464,14 @@ export default function DashboardCommandView() {
               <div className="sn-label">operator: AUTO_SWARM / v4</div>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* ════════════════════════════════════════
           Bottom Row: Municipal Infrastructure Failover Matrix
           ════════════════════════════════════════ */}
-      <div className="col-span-12 lg:col-span-8">
-        <div className="sn-panel p-5">
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel className="p-5 flex-1">
           <div className="flex justify-between items-center mb-4 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <div className="flex items-center gap-2">
               <Server size={13} style={{ color: "var(--geo-primary)" }} />
@@ -497,12 +518,12 @@ export default function DashboardCommandView() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* Dynamic Engine Control dials */}
-      <div className="col-span-12 lg:col-span-4">
-        <div className="sn-panel p-5 h-full flex flex-col justify-between">
+      <div className="col-span-12 lg:col-span-4 flex flex-col">
+        <Panel className="p-5 h-full flex flex-col justify-between flex-1">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Shield size={12} className="text-violet-400" />
@@ -530,7 +551,7 @@ export default function DashboardCommandView() {
             <span className="sn-label">MUTATOR PARAMETERS</span>
             <span className="flex items-center gap-1 text-[9px] font-mono text-emerald-400"><Check size={10} /> ACTIVE</span>
           </div>
-        </div>
+        </Panel>
       </div>
 
     </motion.div>

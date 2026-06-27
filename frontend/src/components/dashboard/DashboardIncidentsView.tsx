@@ -18,6 +18,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Clock, Users, Flame, Zap, AlertTriangle, Navigation, Globe, RefreshCw } from "lucide-react";
 import TacticalMapCanvas from "./TacticalMapCanvas";
+import { Panel } from "../ui/Panel";
+import { Badge } from "../ui/Badge";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -95,7 +97,7 @@ export default function DashboardIncidentsView() {
           ══════════════════════════════════════ */}
       <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
         {/* Incident Feed list */}
-        <div className="sn-panel p-5 flex flex-col" style={{ minHeight: 330 }}>
+        <Panel className="p-5 flex flex-col flex-1">
           <div
             className="flex items-center justify-between mb-4 pb-3"
             style={{ borderBottom: "1px solid var(--border-base)" }}
@@ -150,10 +152,10 @@ export default function DashboardIncidentsView() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
 
         {/* Brand-new addition: Multi-City Global Monitoring Scope */}
-        <div className="sn-panel p-5 flex flex-col justify-between" style={{ minHeight: 195 }}>
+        <Panel className="p-5 flex flex-col justify-between flex-1">
           <div>
             <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: "1px solid var(--border-base)" }}>
               <div className="flex items-center gap-1.5">
@@ -178,16 +180,16 @@ export default function DashboardIncidentsView() {
           <div className="text-[8px] font-mono text-white/30 flex items-center gap-1 mt-3">
             <RefreshCw size={8} className="animate-spin" style={{ animationDuration: "5s" }} /> COORDINATOR FEED SYNCHRONIZED
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* ══════════════════════════════════════
           Center Column: Tactical Map (HERO)
           ══════════════════════════════════════ */}
-      <div className="col-span-12 lg:col-span-6">
-        <div
-          className="sn-panel sn-panel-geo relative overflow-hidden sn-bracket flex flex-col"
-          style={{ height: 540 }}
+      <div className="col-span-12 lg:col-span-6 flex flex-col">
+        <Panel
+          variant="geo"
+          className="sn-bracket relative overflow-hidden flex-1 min-h-[540px] flex flex-col"
         >
           <div
             className="flex items-center justify-between px-5 py-3 z-10 relative"
@@ -245,7 +247,7 @@ export default function DashboardIncidentsView() {
               </div>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* ══════════════════════════════════════
@@ -254,7 +256,7 @@ export default function DashboardIncidentsView() {
       <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
 
         {/* Incident Detail Card (expanded with Replay history) */}
-        <div className="sn-panel p-5 flex flex-col gap-3">
+        <Panel className="p-5 flex flex-col gap-3">
           <div className="flex items-center gap-2 pb-3.5" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <span style={{ color: "var(--text-muted)" }}>{TYPE_ICON[active.type] ?? TYPE_ICON.other}</span>
             <span className="sn-label-accent">Incident Detail</span>
@@ -291,10 +293,10 @@ export default function DashboardIncidentsView() {
               <button className="sn-btn-ghost text-[9px] py-1.5 justify-center">RESOLVE</button>
             </div>
           </div>
-        </div>
+        </Panel>
 
         {/* Response Units expanded with Dynamic Resource Balancing bar chart */}
-        <div className="sn-panel p-5 flex flex-col justify-between flex-1" style={{ minHeight: 250 }}>
+        <Panel className="p-5 flex flex-col justify-between flex-1">
           <div>
             <div className="flex items-center justify-between pb-3 mb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
               <span className="sn-label-accent">Resource Allocation</span>
@@ -334,7 +336,7 @@ export default function DashboardIncidentsView() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
 
       </div>
 

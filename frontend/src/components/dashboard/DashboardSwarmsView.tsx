@@ -16,6 +16,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Terminal, Cpu, Wifi, Radio, Server, Check } from "lucide-react";
+import { Panel } from "../ui/Panel";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -228,8 +229,8 @@ export default function DashboardSwarmsView() {
     >
 
       {/* ── Hero: Swarm Topology ── */}
-      <div className="col-span-12 lg:col-span-8">
-        <div className="sn-panel sn-panel-geo relative overflow-hidden sn-bracket" style={{ height: 480 }}>
+      <div className="col-span-12 lg:col-span-8 flex flex-col">
+        <Panel variant="geo" className="sn-bracket relative overflow-hidden flex-1 min-h-[480px] flex flex-col">
           <div
             className="absolute top-0 inset-x-0 z-10 flex items-center justify-between px-5 py-3"
             style={{
@@ -265,12 +266,12 @@ export default function DashboardSwarmsView() {
             <div className="sn-label mb-0.5">SWARM COHESION</div>
             <div className="text-lg font-mono font-bold" style={{ color: "var(--intel-primary)" }}>98.4%</div>
           </div>
-        </div>
+        </Panel>
 
         {/* Dynamic Metrics Row with Live Fluctuating SVG charts */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           {/* Node Sync rate with active line graph */}
-          <div className="sn-panel p-4 flex flex-col justify-between" style={{ minHeight: 155 }}>
+          <Panel className="p-4 flex flex-col justify-between flex-1">
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="sn-label">SYNC INDEX</span>
@@ -292,10 +293,10 @@ export default function DashboardSwarmsView() {
                 />
               </svg>
             </div>
-          </div>
+          </Panel>
 
           {/* Avg CPU Load card with micro performance progress */}
-          <div className="sn-panel p-4 flex flex-col justify-between" style={{ minHeight: 155 }}>
+          <Panel className="p-4 flex flex-col justify-between flex-1">
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="sn-label">CPU LOAD</span>
@@ -313,10 +314,10 @@ export default function DashboardSwarmsView() {
                 <span>SYS PRE-ALLOC</span><span>STANDBY</span>
               </div>
             </div>
-          </div>
+          </Panel>
 
           {/* Swarm Efficiency Area Graph */}
-          <div className="sn-panel p-4 flex flex-col justify-between" style={{ minHeight: 155 }}>
+          <Panel className="p-4 flex flex-col justify-between flex-1">
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="sn-label">SWARM EFFICIENCY</span>
@@ -347,7 +348,7 @@ export default function DashboardSwarmsView() {
                 />
               </svg>
             </div>
-          </div>
+          </Panel>
         </div>
       </div>
 
@@ -355,7 +356,7 @@ export default function DashboardSwarmsView() {
       <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
 
         {/* Active agents */}
-        <div className="sn-panel p-5 flex flex-col gap-3">
+        <Panel className="p-5 flex flex-col gap-3">
           <div className="flex justify-between items-center pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <span className="sn-label-accent">Active Swarm Telemetry</span>
             <span className="sn-badge sn-badge-success">4 ONLINE</span>
@@ -389,10 +390,10 @@ export default function DashboardSwarmsView() {
               </div>
             </div>
           ))}
-        </div>
+        </Panel>
 
         {/* Neural Sync Subprocess Console */}
-        <div className="sn-panel p-4">
+        <Panel className="p-4">
           <div className="flex items-center gap-1.5 sn-label-accent mb-2.5 pb-2" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <Server size={11} style={{ color: "var(--neural-primary)" }} />
             <span>Neural Sync Processes</span>
@@ -413,10 +414,10 @@ export default function DashboardSwarmsView() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
 
         {/* Comm stream */}
-        <div className="sn-panel p-5 flex-1 flex flex-col">
+        <Panel className="p-5 flex-1 flex flex-col">
           <div className="flex items-center gap-2 mb-3 pb-3" style={{ borderBottom: "1px solid var(--border-base)" }}>
             <Terminal size={11} style={{ color: "var(--text-muted)" }} />
             <span className="sn-label-accent">Comm Stream</span>
@@ -436,7 +437,7 @@ export default function DashboardSwarmsView() {
               </motion.div>
             ))}
           </div>
-        </div>
+        </Panel>
 
       </div>
     </motion.div>

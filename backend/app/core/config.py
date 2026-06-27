@@ -21,9 +21,10 @@ class Settings(BaseSettings):
     environment: str = "development"
     debug: bool = True
     secret_key: str = "dev-secret-key-change-in-production"
+    access_token_expire_minutes: int = 60 * 24 * 7 # 7 days
 
     # ─── Database ───
-    database_url: str = "postgresql://swarmnet:swarmnet_secret@localhost:5432/swarmnet_db"
+    database_url: str = "sqlite+aiosqlite:///./swarmnet.db"
     db_echo: bool = False
 
     # ─── Redis ───
