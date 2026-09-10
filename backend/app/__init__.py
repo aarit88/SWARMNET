@@ -1,4 +1,0 @@
-"""
-SWARMNET Backend — App Package
-===============================
-"""

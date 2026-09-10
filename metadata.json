@@ -1,0 +1,6 @@
+{
+  "name": "SWARMNET — AI Emergency Response Platform",
+  "description": "Real-time AI swarm coordination system for emergency and disaster response. Autonomous multi-agent platform for incident detection, resource allocation, and public safety.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
